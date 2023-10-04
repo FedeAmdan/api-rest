@@ -1,0 +1,36 @@
+version: '3.1'
+
+services:
+  redis:
+    image: redis:latest
+    ports:
+      - "6379:6379"
+
+  db:
+    image: postgres
+    environment:
+      POSTGRES_USER: user
+      POSTGRES_PASSWORD: password
+      POSTGRES_DB: apirestdatabase
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_apirest_data:/var/lib/postgresql/data
+
+  api-rest:
+    build: .
+    environment:
+      DATASOURCE_URL: jdbc:postgresql://db:5432/apirestdatabase
+      DATASOURCE_USERNAME: user
+      DATASOURCE_PASSWORD: password
+      CACHE_HOST: redis
+      CACHE_PORT: 6379
+      EXTERNAL_SERVICE_BASE_URL: http://localhost:8081
+    depends_on:
+      - db
+      - redis
+    ports:
+      - "8081:8081"
+
+volumes:
+  postgres_apirest_data:
